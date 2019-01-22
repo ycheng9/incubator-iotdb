@@ -42,7 +42,11 @@ public class SeriesReaderByTimestamp {
 
   private ChunkReader chunkReader;
   private long currentTimestamp;
-  private BatchData data = null; // current batch data
+
+  /**
+   * current batch data
+   */
+  private BatchData data = null;
 
   /**
    * init with chunkLoader and chunkMetaDataList.
@@ -91,7 +95,7 @@ public class SeriesReaderByTimestamp {
         }
         return null;
       } else {
-        if (chunkReader.hasNextBatch()) { // data does not has next
+        if (chunkReader.hasNextBatch()) {
           data = chunkReader.nextBatch();
         } else if (!constructNextSatisfiedChunkReader()) {
           return null;
