@@ -208,6 +208,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
   /**
    * constructor of FileNodeProcessor.
+   * @param  fileNodeDirPath folder path of the data files
+   * @param  processorName storage group name (root.xx.xx....)
    */
   FileNodeProcessor(String fileNodeDirPath, String processorName)
       throws FileNodeProcessorException {
@@ -216,6 +218,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
         MonitorConstants.FileNodeProcessorStatConstants.values()) {
       statParamsHashMap.put(statConstant.name(), new AtomicLong(0));
     }
+    //TODO change name?
     statStorageDeltaName =
         MonitorConstants.statStorageGroupPrefix + MonitorConstants.MONITOR_PATH_SEPERATOR
             + MonitorConstants.fileNodePath + MonitorConstants.MONITOR_PATH_SEPERATOR
