@@ -1838,23 +1838,26 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     @Override
     public void run() {
       try {
-        ZoneId zoneId = IoTDBDescriptor.getInstance().getConfig().getZoneID();
         long mergeStartTime = System.currentTimeMillis();
         writeLock();
         merge();
         long mergeEndTime = System.currentTimeMillis();
         long intervalTime = mergeEndTime - mergeStartTime;
-        LOGGER.info(
-            "The filenode processor {} merge start time is {}, "
-                + "merge end time is {}, merge consumes {}ms.",
-            getProcessorName(), ofInstant(Instant.ofEpochMilli(mergeStartTime),
-                zoneId), ofInstant(Instant.ofEpochMilli(mergeEndTime),
-                zoneId), intervalTime);
+        if (LOGGER.isInfoEnabled()) {
+          ZoneId zoneId = IoTDBDescriptor.getInstance().getConfig().getZoneID();
+          LOGGER.info(
+              "The filenode processor {} merge start time is {}, "
+                  + "merge end time is {}, merge consumes {}ms.",
+              getProcessorName(), ofInstant(Instant.ofEpochMilli(mergeStartTime),
+                  zoneId), ofInstant(Instant.ofEpochMilli(mergeEndTime),
+                  zoneId), intervalTime);
+        }
       } catch (FileNodeProcessorException e) {
         LOGGER.error("The filenode processor {} encountered an error when merging.",
             getProcessorName(), e);
         throw new ErrorDebugException(e);
       }
+      //FIXME no unlock?????
     }
   }
 }
