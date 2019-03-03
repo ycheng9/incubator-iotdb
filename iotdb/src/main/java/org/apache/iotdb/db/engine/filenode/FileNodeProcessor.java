@@ -148,7 +148,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   private boolean shouldRecovery = false;
   // statistic monitor parameters
   private Map<String, Action> parameters;
+
   private FileSchema fileSchema;
+
+  /**
+   * used for saving fileNodeProcessorStore on disk.
+   */
   private Action flushFileNodeProcessorAction = () -> {
     synchronized (fileNodeProcessorStore) {
       try {
@@ -158,6 +163,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       }
     }
   };
+  /**
+   * used for updating flushLastUpdateTimeMap as lastUpdateTimeMap.value()+1,
+   * and updating lastUpdateTimeMap into fileNodeProcessorStore
+   */
   private Action bufferwriteFlushAction = () -> {
     // update the lastUpdateTime Notice: Thread safe
     synchronized (fileNodeProcessorStore) {
@@ -171,17 +180,24 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     }
   };
 
+  /**
+   *
+   */
   private Action bufferwriteCloseAction = new Action() {
 
     @Override
     public void act() {
       synchronized (fileNodeProcessorStore) {
+        //why do not deep copy?
         fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
         addLastTimeToIntervalFile();
         fileNodeProcessorStore.setNewFileNodes(newFileNodes);
       }
     }
 
+    /**
+     * modify the endTimeMap of currentIntervalFileNode
+     */
     private void addLastTimeToIntervalFile() {
 
       if (!newFileNodes.isEmpty()) {
@@ -568,7 +584,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     return overflowProcessor;
   }
 
-  public boolean hasOverflowProcessor() {
+  boolean hasOverflowProcessor() {
     return overflowProcessor != null;
   }
 
@@ -585,7 +601,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   /**
    * set last update time.
    */
-  public void setLastUpdateTime(String deviceId, long timestamp) {
+  void setLastUpdateTime(String deviceId, long timestamp) {
     if (!lastUpdateTimeMap.containsKey(deviceId) || lastUpdateTimeMap.get(deviceId) < timestamp) {
       lastUpdateTimeMap.put(deviceId, timestamp);
     }
@@ -594,7 +610,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   /**
    * get last update time.
    */
-  public long getLastUpdateTime(String deviceId) {
+  long getLastUpdateTime(String deviceId) {
 
     if (lastUpdateTimeMap.containsKey(deviceId)) {
       return lastUpdateTimeMap.get(deviceId);
@@ -606,21 +622,18 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   /**
    * get flush last update time.
    */
-  public long getFlushLastUpdateTime(String deviceId) {
+  long getFlushLastUpdateTime(String deviceId) {
     if (!flushLastUpdateTimeMap.containsKey(deviceId)) {
       flushLastUpdateTimeMap.put(deviceId, 0L);
     }
     return flushLastUpdateTimeMap.get(deviceId);
   }
 
-  public Map<String, Long> getLastUpdateTimeMap() {
-    return lastUpdateTimeMap;
-  }
 
   /**
    * For insert overflow.
    */
-  public void changeTypeToChanged(String deviceId, long timestamp) {
+  void changeTypeToChanged(String deviceId, long timestamp) {
     if (!invertedIndexOfFiles.containsKey(deviceId)) {
       LOGGER.warn(
           WARN_NO_SUCH_OVERFLOWED_FILE
@@ -819,11 +832,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
   /**
    * append one specified tsfile to this filenode processor.
-   *
+   * TODO
    * @param appendFile the appended tsfile information
    * @param appendFilePath the seriesPath of appended file
    */
-  public void appendFile(IntervalFileNode appendFile, String appendFilePath)
+  void appendFile(IntervalFileNode appendFile, String appendFilePath)
       throws FileNodeProcessorException {
     try {
       if (!new File(appendFile.getFilePath()).getParentFile().exists()) {
