@@ -56,7 +56,7 @@ CLASSPATH=""
 for f in ${IOTDB_HOME}/lib/*.jar; do
   CLASSPATH=${CLASSPATH}":"$f
 done
-classname=org.apache.iotdb.db.service.IoTDB
+classname=org.apache.iotdb.db.cluster.IoTDBCluster
 
 launch_service()
 {

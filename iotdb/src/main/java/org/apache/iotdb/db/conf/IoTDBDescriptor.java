@@ -79,7 +79,7 @@ public class IoTDBDescriptor {
       return;
     }
 
-    conf.clusterConfig = ConfigFactory.parseFile(new File(url, IoTDBConstant.CLUSTER_CONFIG));
+    conf.clusterConfig = ConfigFactory.parseFile(new File(new File(url).getParent(), IoTDBConstant.CLUSTER_CONFIG));
 
     LOGGER.info("Start to read config file {}", url);
     Properties properties = new Properties();
