@@ -18,6 +18,7 @@
  */
 package org.apache.iotdb.db.conf;
 
+import com.typesafe.config.ConfigFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -77,6 +78,8 @@ public class IoTDBDescriptor {
       conf.updatePath();
       return;
     }
+
+    conf.clusterConfig = ConfigFactory.parseFile(new File(url, IoTDBConstant.CLUSTER_CONFIG));
 
     LOGGER.info("Start to read config file {}", url);
     Properties properties = new Properties();

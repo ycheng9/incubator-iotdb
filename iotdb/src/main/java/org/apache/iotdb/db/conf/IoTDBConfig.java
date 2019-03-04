@@ -18,6 +18,8 @@
  */
 package org.apache.iotdb.db.conf;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import java.io.File;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -273,6 +275,12 @@ public class IoTDBConfig {
    */
   public long cacheFileReaderClearPeriod = 100000;
 
+  /**
+   * Cluster Config
+   */
+  public Config clusterConfig;
+
+
   public IoTDBConfig() {
     // empty constructor
   }
@@ -322,6 +330,32 @@ public class IoTDBConfig {
 
     derbyHome = sysDir + derbyHome;
     indexFileDir = dataDir + indexFileDir;
+
+    // default cluster configuration
+    clusterConfig = ConfigFactory.parseString("akka {\n"
+        + "  actor {\n"
+        + "    provider = \"cluster\"\n"
+        + "  }\n"
+        + "  remote {\n"
+        + "    netty.tcp {\n"
+        + "      hostname = \"127.0.0.1\"\n"
+        + "      port = 2552\n"
+        + "    }\n"
+        + "\n"
+        + "    artery {\n"
+        + "      enabled = off\n"
+        + "      transport = tcp\n"
+        + "      canonical.hostname = \"127.0.0.1\"\n"
+        + "      canonical.port = 0\n"
+        + "    }\n"
+        + "  }\n"
+        + "\n"
+        + "  cluster {\n"
+        + "    seed-nodes = [\n"
+        + "      \"akka.tcp://IoTDBClusterSystem@127.0.0.1:2552\"]\n"
+        + "    auto-down-unreachable-after = 10s\n"
+        + "  }\n"
+        + "}");
   }
 
   /*
