@@ -278,7 +278,30 @@ public class IoTDBConfig {
   /**
    * Cluster Config
    */
-  public Config clusterConfig;
+  public Config clusterConfig = ConfigFactory.parseString("akka {\n"
+      + "  actor {\n"
+      + "    provider = \"cluster\"\n"
+      + "  }\n"
+      + "  remote {\n"
+      + "    netty.tcp {\n"
+      + "      hostname = \"127.0.0.1\"\n"
+      + "      port = 2552\n"
+      + "    }\n"
+      + "\n"
+      + "    artery {\n"
+      + "      enabled = off\n"
+      + "      transport = tcp\n"
+      + "      canonical.hostname = \"127.0.0.1\"\n"
+      + "      canonical.port = 0\n"
+      + "    }\n"
+      + "  }\n"
+      + "\n"
+      + "  cluster {\n"
+      + "    seed-nodes = [\n"
+      + "      \"akka.tcp://IoTDBClusterSystem@127.0.0.1:2552\"]\n"
+      + "    auto-down-unreachable-after = 10s\n"
+      + "  }\n"
+      + "}");
 
 
   public IoTDBConfig() {
@@ -331,31 +354,6 @@ public class IoTDBConfig {
     derbyHome = sysDir + derbyHome;
     indexFileDir = dataDir + indexFileDir;
 
-    // default cluster configuration
-    clusterConfig = ConfigFactory.parseString("akka {\n"
-        + "  actor {\n"
-        + "    provider = \"cluster\"\n"
-        + "  }\n"
-        + "  remote {\n"
-        + "    netty.tcp {\n"
-        + "      hostname = \"127.0.0.1\"\n"
-        + "      port = 2552\n"
-        + "    }\n"
-        + "\n"
-        + "    artery {\n"
-        + "      enabled = off\n"
-        + "      transport = tcp\n"
-        + "      canonical.hostname = \"127.0.0.1\"\n"
-        + "      canonical.port = 0\n"
-        + "    }\n"
-        + "  }\n"
-        + "\n"
-        + "  cluster {\n"
-        + "    seed-nodes = [\n"
-        + "      \"akka.tcp://IoTDBClusterSystem@127.0.0.1:2552\"]\n"
-        + "    auto-down-unreachable-after = 10s\n"
-        + "  }\n"
-        + "}");
   }
 
   /*

@@ -56,5 +56,5 @@ public class IoTDBConstant {
   public static final String MIN_TIME = "min_time";
   public static final int MIN_SUPPORTED_JDK_VERSION = 8;
 
-  public static final String CLUSTER_CONFIG = "iotdb_cluster.properties";
+  public static final String CLUSTER_CONFIG = "iotdb-cluster.conf";
 }
