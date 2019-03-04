@@ -26,7 +26,6 @@ public class IoTDBNode extends AbstractActor {
     return Props.create(IoTDBNode.class, () -> new IoTDBNode());
   }
 
-  //subscribe to cluster changes
   @Override
   public void preStart() {
     cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(),
@@ -35,7 +34,6 @@ public class IoTDBNode extends AbstractActor {
     daemon.active();
   }
 
-  //re-subscribe when restart
   @Override
   public void postStop() throws FileNodeManagerException {
     cluster.unsubscribe(self());

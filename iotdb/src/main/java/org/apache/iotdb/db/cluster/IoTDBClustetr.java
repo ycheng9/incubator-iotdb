@@ -35,11 +35,7 @@ public class IoTDBClustetr {
           "/Users/litianan/workspace/java/IDEA/IoTDBProject/incubator-iotdb/iotdb/iotdb/conf",
           IoTDBConstant.CLUSTER_CONFIG));
     }
-
-    // Create an Akka system
     ActorSystem system = ActorSystem.create("IoTDBClusterSystem", config);
-
-    // Create an actor that handles cluster domain events
     system.actorOf(IoTDBNode.props(), "clusterListener");
   }
 }
