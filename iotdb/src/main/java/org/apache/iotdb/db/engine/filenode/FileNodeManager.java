@@ -723,25 +723,7 @@ public class FileNodeManager implements IStatistic, IService {
     return true;
   }
 
-  /**
-   * Append one specified tsfile to the storage group. <b>This method is only provided for
-   * transmission module</b>
-   *
-   * @param fileNodeName the seriesPath of storage group
-   * @param appendFile the appended tsfile information
-   */
-  public boolean appendFileToFileNode2(String fileNodeName, IntervalFileNode appendFile,
-      String appendFilePath) throws FileNodeManagerException {
-    // 0. if the filenode is in merging process, block.
-    // 1. if the appendFile has a longer history (i.e, startTime and endTime of each Devices are
-    // suitable), then just copy the file to the data folder and update file lists;
-    // 2. if the appendFile has a longer history but the startTime and endTime of some devices are
-    // overlappted with other TsFiles, then forward this part of data into overflowProcessor and keep
-    // the rest part of data as a new TsFile.
-    // 3. if the start time of some devices >= bufferwrite's timestamp, then flush the bufferwrite,
-    // and then copy the file to the dta folder
-    return false;
-  }
+
 
   /**
    * get all overlap tsfiles which are conflict with the appendFile.
