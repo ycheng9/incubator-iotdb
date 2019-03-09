@@ -24,7 +24,17 @@ package org.apache.iotdb.db.engine.filenode;
  * If it's changed and in CHANGED previously, and in merging, CHANGED-->MERGING_CHANGE, update file<br>
  * If it's changed and in CHANGED previously, and not in merging, do nothing<br>
  * After merging, if it's MERGING_CHANGE, MERGING_CHANGE-->CHANGED, otherwise in NO_CHANGE, MERGING_CHANGE-->NO_CHANGE
+ *<pre>
+ *    +----------+ 2
+ *    v          +
+ * NORMAL+---->CHANGED
+ *         1    + 3
+ *              v
+ *  CHANGED_WHEN_MERGE
+ *</pre>
  */
+
 public enum OverflowChangeType {
   NO_CHANGE, CHANGED, MERGING_CHANGE,
 }
+

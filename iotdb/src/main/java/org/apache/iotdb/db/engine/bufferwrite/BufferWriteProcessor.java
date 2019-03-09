@@ -67,9 +67,9 @@ public class BufferWriteProcessor extends Processor {
   private long memThreshold = TSFileDescriptor.getInstance().getConfig().groupSizeInByte;
   private IMemTable workMemTable;
   private IMemTable flushMemTable;
-  private Action bufferwriteFlushAction;
-  private Action bufferwriteCloseAction;
-  private Action filenodeFlushAction;
+  private Action preFlushAction;
+  private Action closeAction;
+  private Action flushAction;
 
   //lastFlushTime time unit: nanosecond
   private long lastFlushTime = -1;
@@ -119,9 +119,9 @@ public class BufferWriteProcessor extends Processor {
       throw new BufferWriteProcessorException(e);
     }
 
-    bufferwriteFlushAction = parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
-    bufferwriteCloseAction = parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
-    filenodeFlushAction = parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
+    preFlushAction = parameters.get(FileNodeConstants.BUFFERWRITE_FLUSH_ACTION);
+    closeAction = parameters.get(FileNodeConstants.BUFFERWRITE_CLOSE_ACTION);
+    flushAction = parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
     workMemTable = new PrimitiveMemTable();
 
     if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
@@ -285,14 +285,14 @@ public class BufferWriteProcessor extends Processor {
         writer.flush();
       }
 
-      filenodeFlushAction.act();
+      flushAction.act();
       if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
         logNode.notifyEndFlush(null);
       }
       result = true;
     } catch (Exception e) {
       LOGGER.error(
-          "The bufferwrite processor {} failed to flush {}, when calling the filenodeFlushAction.",
+          "The bufferwrite processor {} failed to flush {}, when calling the flushAction.",
           getProcessorName(), displayMessage, e);
       result = false;
     } finally {
@@ -342,7 +342,7 @@ public class BufferWriteProcessor extends Processor {
       }
       // update the lastUpdatetime, prepare for flush
       try {
-        bufferwriteFlushAction.act();
+        preFlushAction.act();
       } catch (Exception e) {
         LOGGER.error("Failed to flush bufferwrite row group when calling the action function.");
         throw new IOException(e);
@@ -378,9 +378,9 @@ public class BufferWriteProcessor extends Processor {
       // end file
       writer.endFile(fileSchema);
       // update the IntervalFile for interval list
-      bufferwriteCloseAction.act();
+      closeAction.act();
       // flush the changed information for filenode
-      filenodeFlushAction.act();
+      flushAction.act();
       // delete the restore for this bufferwrite processor
       if (LOGGER.isInfoEnabled()) {
         long closeEndTime = System.currentTimeMillis();
