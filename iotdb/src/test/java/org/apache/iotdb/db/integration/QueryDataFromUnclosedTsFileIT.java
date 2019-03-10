@@ -28,6 +28,7 @@ import org.apache.iotdb.db.conf.IoTDBDescriptor;
 import org.apache.iotdb.db.engine.filenode.FileNodeManager;
 import org.apache.iotdb.db.engine.querycontext.QueryDataSource;
 import org.apache.iotdb.db.exception.FileNodeManagerException;
+import org.apache.iotdb.db.exception.MetadataArgsErrorException;
 import org.apache.iotdb.db.exception.PathErrorException;
 import org.apache.iotdb.db.metadata.MManager;
 import org.apache.iotdb.db.postback.sender.FileManager;
@@ -69,17 +70,19 @@ public class QueryDataFromUnclosedTsFileIT {
   public void tearDown() throws FileNodeManagerException, IOException {
     IoTDBDescriptor.getInstance().getConfig().bufferwriteFileSizeThreshold = bufferWriteFileSize;
     System.out.println(bufferWriteFileSize);
-    sgManager.deleteAll();
-    mManager.clear();
+    //sgManager.deleteAll();
+    //mManager.clear();
     EnvironmentUtils.cleanEnv();
 
   }
 
   @Test
-  public void test() throws FileNodeManagerException, IOException, PathErrorException {
+  public void test()
+      throws FileNodeManagerException, IOException, PathErrorException, MetadataArgsErrorException {
     //Path path, TSDataType dataType, TSEncoding encoding, CompressionType compressor,
       //  Map<String, String> props
     mManager.setStorageLevelToMTree("root.test");
+    mManager.addPathToMTree("root.test.d1.s1",  TSDataType.INT32, TSEncoding.RLE, CompressionType.SNAPPY, Collections.emptyMap());
     sgManager.addTimeSeries(new Path("root.test.d1", "s1"), TSDataType.INT32, TSEncoding.RLE, CompressionType.SNAPPY, Collections
         .emptyMap());
     for (int i=0; i < 100; i++) {
@@ -90,8 +93,7 @@ public class QueryDataFromUnclosedTsFileIT {
     QueryDataSet result = queryManager.query(qe);
     while (result.hasNext()) {
       RowRecord record = result.next();
-      System.out.println(record.getTimestamp() + record.getFields().get(0).getIntV());
-
+      System.out.println(record.getTimestamp() +"," + record.getFields().get(0).getIntV());
     }
 
   }
