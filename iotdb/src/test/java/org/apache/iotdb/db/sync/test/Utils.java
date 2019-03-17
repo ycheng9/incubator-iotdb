@@ -19,7 +19,7 @@
 package org.apache.iotdb.db.sync.test;
 
 /**
- *  * @author Tianan Li
+ * @author Tianan Li
  */
 
 public class Utils {

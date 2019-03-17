@@ -26,5 +26,5 @@ if [ -z "$PIDS" ]; then
   exit 1
 else 
   kill -s TERM $PIDS
-  echo "close PostBackClient"
+  echo "close SyncClient"
 fi

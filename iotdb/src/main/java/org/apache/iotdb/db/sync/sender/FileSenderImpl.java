@@ -194,12 +194,7 @@ public class FileSenderImpl implements FileSender {
     for (String snapshotPath : config.getSnapshotPaths()) {
       if (new File(snapshotPath).exists() && new File(snapshotPath).list().length != 0) {
         /** It means that the last task of sync does not succeed! Clear the files and start to sync again **/
-        try {
-          SyncUtils.deleteFile(new File(snapshotPath));
-        } catch (IOException e) {
-          LOGGER.error("can not delete file {}", snapshotPath);
-          throw new IOException(e);
-        }
+        SyncUtils.deleteFile(new File(snapshotPath));
       }
     }
 
@@ -236,11 +231,7 @@ public class FileSenderImpl implements FileSender {
 
     // 7. clear snapshot
     for (String snapshotPath : config.getSnapshotPaths()) {
-      try {
-        SyncUtils.deleteFile(new File(snapshotPath));
-      } catch (IOException e) {
-        LOGGER.error("can not delete snapshot", e);
-      }
+      SyncUtils.deleteFile(new File(snapshotPath));
     }
 
     // 8. notify receiver that synchronization finish
@@ -248,10 +239,10 @@ public class FileSenderImpl implements FileSender {
     try {
       serviceClient.cleanUp();
     } catch (TException e) {
-      LOGGER.error("unable to connect to receiver ", e);
+      LOGGER.error("Unable to connect to receiver.", e);
     }
     transport.close();
-    LOGGER.info("sync process has finished");
+    LOGGER.info("Sync process has finished.");
     syncStatus = false;
   }
 
@@ -263,21 +254,21 @@ public class FileSenderImpl implements FileSender {
       if (validSnapshot.isEmpty()) {
         continue;
       }
-      LOGGER.info("sync process starts to transfer data of storage group {}", entry.getKey());
+      LOGGER.info("Sync process starts to transfer data of storage group {}", entry.getKey());
       try {
         serviceClient.init(entry.getKey());
       } catch (TException e) {
-        throw new SyncConnectionException("unable to connect to receiver", e);
+        throw new SyncConnectionException("Unable to connect to receiver", e);
       }
       syncData(validSnapshot);
       if (afterSynchronization()) {
         currentLocalFiles.get(entry.getKey()).addAll(validFiles);
         fileManager.setCurrentLocalFiles(currentLocalFiles);
         fileManager.backupNowLocalFileInfo(config.getLastFileInfo());
-        LOGGER.info("sync process has finished storage group {}.", entry.getKey());
+        LOGGER.info("Sync process has finished storage group {}.", entry.getKey());
       } else {
         throw new SyncConnectionException(
-            "receiver cannot sync data, abandon this synchronization");
+            "Receiver cannot sync data, abandon this synchronization");
       }
     }
   }
@@ -297,7 +288,7 @@ public class FileSenderImpl implements FileSender {
       transport.open();
     } catch (TTransportException e) {
       syncStatus = false;
-      LOGGER.error("cannot connect to server");
+      LOGGER.error("Cannot connect to server");
       throw new SyncConnectionException(e);
     }
   }
@@ -313,20 +304,18 @@ public class FileSenderImpl implements FileSender {
     }
     if (!file.exists()) {
       try (FileOutputStream out = new FileOutputStream(file)) {
-        if (!file.createNewFile()) {
-          LOGGER.error("cannot create file {}", file.getPath());
-        }
+        file.createNewFile();
         uuid = generateUUID();
         out.write(uuid.getBytes());
       } catch (IOException e) {
-        LOGGER.error("cannot write UUID to file {}", file.getPath());
+        LOGGER.error("Cannot write UUID to file {}", file.getPath());
         throw new IOException(e);
       }
     } else {
       try (BufferedReader bf = new BufferedReader((new FileReader(uuidPath)))) {
         uuid = bf.readLine();
       } catch (IOException e) {
-        LOGGER.error("cannot read UUID from file{}", file.getPath());
+        LOGGER.error("Cannot read UUID from file{}", file.getPath());
         throw new IOException(e);
       }
     }
@@ -335,7 +324,7 @@ public class FileSenderImpl implements FileSender {
       legalConnection = serviceClient.checkIdentity(uuid,
           InetAddress.getLocalHost().getHostAddress());
     } catch (Exception e) {
-      LOGGER.error("cannot confirm identity with receiver");
+      LOGGER.error("Cannot confirm identity with receiver");
       throw new SyncConnectionException(e);
     }
     return legalConnection;
@@ -364,7 +353,7 @@ public class FileSenderImpl implements FileSender {
         Files.createLink(link, target);
       }
     } catch (IOException e) {
-      LOGGER.error("can not make fileSnapshot");
+      LOGGER.error("Can not make fileSnapshot");
       throw new IOException(e);
     }
     return validFilesSnapshot;
@@ -421,7 +410,7 @@ public class FileSenderImpl implements FileSender {
           String md5OfReceiver = serviceClient.syncData(md5OfSender, filePathSplit,
               null, SyncDataStatus.SUCCESS_STATUS);
           if (md5OfSender.equals(md5OfReceiver)) {
-            LOGGER.info("receiver has received {} successfully.", snapshotFilePath);
+            LOGGER.info("Receiver has received {} successfully.", snapshotFilePath);
             break;
           }
         }
@@ -431,7 +420,7 @@ public class FileSenderImpl implements FileSender {
         }
       }
     } catch (Exception e) {
-      throw new SyncConnectionException("cannot sync data with receiver.", e);
+      throw new SyncConnectionException("Cannot sync data with receiver.", e);
     }
   }
 
@@ -456,7 +445,7 @@ public class FileSenderImpl implements FileSender {
       // 0 represents the schema file has been transferred completely.
       serviceClient.syncSchema(null, SyncDataStatus.SUCCESS_STATUS);
     } catch (Exception e) {
-      LOGGER.error("cannot sync schema ", e);
+      LOGGER.error("Cannot sync schema ", e);
       throw new SyncConnectionException(e);
     }
   }
@@ -468,7 +457,7 @@ public class FileSenderImpl implements FileSender {
       successOrNot = serviceClient.load();
     } catch (TException e) {
       throw new SyncConnectionException(
-          "can not finish sync process because sync receiver has broken down.", e);
+          "Can not finish sync process because sync receiver has broken down.", e);
     }
     return successOrNot;
   }
@@ -481,7 +470,7 @@ public class FileSenderImpl implements FileSender {
     try {
       Socket socket = new Socket("localhost", config.getClientPort());
       socket.close();
-      LOGGER.error("The sync client has been started!");
+      LOGGER.error("Sync client has been started!");
       System.exit(0);
     } catch (IOException e) {
       try (ServerSocket listenerSocket = new ServerSocket(config.getClientPort())) {
@@ -490,14 +479,13 @@ public class FileSenderImpl implements FileSender {
             try {
               listenerSocket.accept();
             } catch (IOException e2) {
-              LOGGER.error("IoTDB sync sender: unable to  listen to port{}",
-                  config.getClientPort(), e2);
+              LOGGER.error("Unable to  listen to port{}", config.getClientPort(), e2);
             }
           }
         });
         listener.start();
       } catch (IOException e1) {
-        LOGGER.error("unable to listen to port{}", config.getClientPort());
+        LOGGER.error("Unable to listen to port{}", config.getClientPort());
         throw new IOException();
       }
     }

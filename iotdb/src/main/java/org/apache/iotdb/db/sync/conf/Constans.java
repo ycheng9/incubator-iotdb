@@ -34,6 +34,8 @@ public class Constans {
   public static final String LAST_LOCAL_FILE_NAME = "last_local_files.txt";
   public static final String DATA_SNAPSHOT_NAME = "data-snapshot";
 
+  public static final String BACK_UP_DIRECTORY_NAME = "backup";
+
   /**
    * Split data file , block size at each transmission
    **/

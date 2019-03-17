@@ -27,7 +27,7 @@ import org.apache.iotdb.db.metadata.MetadataConstant;
  */
 public class SyncSenderConfig {
 
-  private String[] iotdbBufferwriteDirectory = IoTDBDescriptor.getInstance().getConfig()
+  private String[] bufferwriteDirectory = IoTDBDescriptor.getInstance().getConfig()
       .getBufferWriteDirs();
   private String dataDirectory = IoTDBDescriptor.getInstance().getConfig().getDataDir();
   private String uuidPath;
@@ -54,27 +54,27 @@ public class SyncSenderConfig {
     uuidPath = dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.UUID_FILE_NAME;
     lastFileInfo =
         dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.LAST_LOCAL_FILE_NAME;
-    snapshotPaths = new String[iotdbBufferwriteDirectory.length];
-    for (int i = 0; i < iotdbBufferwriteDirectory.length; i++) {
-      iotdbBufferwriteDirectory[i] = new File(iotdbBufferwriteDirectory[i]).getAbsolutePath();
-      if (iotdbBufferwriteDirectory[i].length() > 0
-          && iotdbBufferwriteDirectory[i].charAt(iotdbBufferwriteDirectory[i].length() - 1)
+    snapshotPaths = new String[bufferwriteDirectory.length];
+    for (int i = 0; i < bufferwriteDirectory.length; i++) {
+      bufferwriteDirectory[i] = new File(bufferwriteDirectory[i]).getAbsolutePath();
+      if (bufferwriteDirectory[i].length() > 0
+          && bufferwriteDirectory[i].charAt(bufferwriteDirectory[i].length() - 1)
           != File.separatorChar) {
-        iotdbBufferwriteDirectory[i] = iotdbBufferwriteDirectory[i] + File.separatorChar;
+        bufferwriteDirectory[i] = bufferwriteDirectory[i] + File.separatorChar;
       }
-      snapshotPaths[i] = iotdbBufferwriteDirectory[i] + Constans.SYNC_CLIENT + File.separatorChar
+      snapshotPaths[i] = bufferwriteDirectory[i] + Constans.SYNC_CLIENT + File.separatorChar
           + Constans.DATA_SNAPSHOT_NAME
           + File.separatorChar;
     }
 
   }
 
-  public String[] getIotdbBufferwriteDirectory() {
-    return iotdbBufferwriteDirectory;
+  public String[] getBufferwriteDirectory() {
+    return bufferwriteDirectory;
   }
 
-  public void setIotdbBufferwriteDirectory(String[] iotdbBufferwriteDirectory) {
-    this.iotdbBufferwriteDirectory = iotdbBufferwriteDirectory;
+  public void setBufferwriteDirectory(String[] bufferwriteDirectory) {
+    this.bufferwriteDirectory = bufferwriteDirectory;
   }
 
   public String getDataDirectory() {
