@@ -20,4 +20,4 @@
 @echo off
 
 wmic process where (commandline like "%%SyncClient%%" and not name="wmic.exe") delete
-rem ps ax | grep -i 'postBackClient' | grep -v grep | awk '{print $1}' | xargs kill -SIGTERM
+rem ps ax | grep -i 'SyncClient' | grep -v grep | awk '{print $1}' | xargs kill -SIGTERM
