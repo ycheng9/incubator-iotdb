@@ -30,15 +30,14 @@ public class SyncSenderConfig {
   private String[] bufferwriteDirectory = IoTDBDescriptor.getInstance().getConfig()
       .getBufferWriteDirs();
   private String dataDirectory = IoTDBDescriptor.getInstance().getConfig().getDataDir();
+  private String lockFilePath;
   private String uuidPath;
   private String lastFileInfo;
   private String[] snapshotPaths;
   private String schemaPath;
   private String serverIp = "127.0.0.1";
   private int serverPort = 5555;
-  private int clientPort = 6666;
   private int uploadCycleInSeconds = 10;
-  private boolean clearEnable = false;
 
   public void init() {
     String metadataDirPath = IoTDBDescriptor.getInstance().getConfig().getMetadataDir();
@@ -51,6 +50,8 @@ public class SyncSenderConfig {
         && dataDirectory.charAt(dataDirectory.length() - 1) != File.separatorChar) {
       dataDirectory += File.separatorChar;
     }
+    lockFilePath =
+        dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.LOCK_FILE_NAME;
     uuidPath = dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.UUID_FILE_NAME;
     lastFileInfo =
         dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.LAST_LOCAL_FILE_NAME;
@@ -133,14 +134,6 @@ public class SyncSenderConfig {
     this.serverPort = serverPort;
   }
 
-  public int getClientPort() {
-    return clientPort;
-  }
-
-  public void setClientPort(int clientPort) {
-    this.clientPort = clientPort;
-  }
-
   public int getUploadCycleInSeconds() {
     return uploadCycleInSeconds;
   }
@@ -149,11 +142,11 @@ public class SyncSenderConfig {
     this.uploadCycleInSeconds = uploadCycleInSeconds;
   }
 
-  public boolean getClearEnable() {
-    return clearEnable;
+  public String getLockFilePath() {
+    return lockFilePath;
   }
 
-  public void setClearEnable(boolean clearEnable) {
-    this.clearEnable = clearEnable;
+  public void setLockFilePath(String lockFilePath) {
+    this.lockFilePath = lockFilePath;
   }
 }

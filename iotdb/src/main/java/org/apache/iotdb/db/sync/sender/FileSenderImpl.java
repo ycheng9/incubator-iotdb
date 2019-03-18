@@ -10,7 +10,6 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
@@ -25,11 +24,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,7 +148,7 @@ public class FileSenderImpl implements FileSender {
       throws InterruptedException, IOException, SyncConnectionException {
     Thread.currentThread().setName(ThreadName.SYNC_CLIENT.getName());
     FileSenderImpl fileSenderImpl = new FileSenderImpl();
-    fileSenderImpl.verifyPort();
+    fileSenderImpl.verifySingleton();
     fileSenderImpl.startMonitor();
     fileSenderImpl.timedTask();
   }
@@ -198,23 +197,19 @@ public class FileSenderImpl implements FileSender {
       }
     }
 
-    syncStatus = true;
-
-    // 2. Connect to sync server and Confirm Identity
-    establishConnection(config.getServerIp(), config.getServerPort());
-    if (!confirmIdentity(config.getUuidPath())) {
-      LOGGER.error("Sorry, you do not have the permission to connect to sync receiver.");
-      syncStatus = false;
-      return;
-    }
-
-    // 3. Acquire valid files and check
+    // 2. Acquire valid files and check
     fileManager.init();
     validAllFiles = fileManager.getValidAllFiles();
     currentLocalFiles = fileManager.getCurrentLocalFiles();
     if (SyncUtils.isEmpty(validAllFiles)) {
       LOGGER.info("There has no file to sync !");
-      syncStatus = false;
+      return;
+    }
+
+    // 3. Connect to sync server and Confirm Identity
+    establishConnection(config.getServerIp(), config.getServerPort());
+    if (!confirmIdentity(config.getUuidPath())) {
+      LOGGER.error("Sorry, you do not have the permission to connect to sync receiver.");
       return;
     }
 
@@ -222,6 +217,8 @@ public class FileSenderImpl implements FileSender {
     for (Entry<String, Set<String>> entry : validAllFiles.entrySet()) {
       validFileSnapshot.put(entry.getKey(), makeFileSnapshot(entry.getValue()));
     }
+
+    syncStatus = true;
 
     // 5. Sync schema
     syncSchema();
@@ -463,32 +460,71 @@ public class FileSenderImpl implements FileSender {
   }
 
   /**
-   * The method is to verify whether the client port is bind or not, ensuring that only one client
-   * is running.
+   * The method is to verify whether the client lock file is locked or not, ensuring that only one
+   * client is running.
    */
-  private void verifyPort() throws IOException {
-    try {
-      Socket socket = new Socket("localhost", config.getClientPort());
-      socket.close();
-      LOGGER.error("Sync client has been started!");
-      System.exit(0);
-    } catch (IOException e) {
-      try (ServerSocket listenerSocket = new ServerSocket(config.getClientPort())) {
-        Thread listener = new Thread(() -> {
-          while (true) {
-            try {
-              listenerSocket.accept();
-            } catch (IOException e2) {
-              LOGGER.error("Unable to  listen to port{}", config.getClientPort(), e2);
-            }
-          }
-        });
-        listener.start();
-      } catch (IOException e1) {
-        LOGGER.error("Unable to listen to port{}", config.getClientPort());
-        throw new IOException();
-      }
+  private void verifySingleton() throws IOException {
+    File lockFile = new File(config.getLockFilePath());
+    if (!lockFile.getParentFile().exists()) {
+      lockFile.getParentFile().mkdirs();
     }
+    if (!lockFile.exists()) {
+      lockFile.createNewFile();
+    }
+    if (!lockInstance(config.getLockFilePath())) {
+      LOGGER.error("Sync client is running.");
+      System.exit(1);
+    }
+//    try {
+//      Socket socket = new Socket("localhost", config.getClientPort());
+//      socket.close();
+//      LOGGER.error("Sync client has been started!");
+//      System.exit(1);
+//    } catch (IOException e) {
+//      try (ServerSocket listenerSocket = new ServerSocket(config.getClientPort())) {
+//        Thread listener = new Thread(() -> {
+//          try {
+//            while (true) {
+//              listenerSocket.accept();
+//            }
+//          } catch (IOException e2) {
+//            LOGGER.error("Unable to  listen to port{}", config.getClientPort(), e2);
+//          }
+//        });
+//        listener.start();
+//      } catch (IOException e1) {
+//        LOGGER.error("Unable to listen to port{}", config.getClientPort());
+//        throw new IOException();
+//      }
+//    }
+  }
+
+  /**
+   * Try to lock lockfile. if failed, it means that sync client has benn started.
+   *
+   * @param lockFile path of lockfile
+   */
+  private static boolean lockInstance(final String lockFile) {
+    try {
+      final File file = new File(lockFile);
+      final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+      final FileLock fileLock = randomAccessFile.getChannel().tryLock();
+      if (fileLock != null) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+          try {
+            fileLock.release();
+            randomAccessFile.close();
+            file.delete();
+          } catch (Exception e) {
+            LOGGER.error("Unable to remove lock file: {}", lockFile, e);
+          }
+        }));
+        return true;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Unable to create and/or lock file: {}", lockFile, e);
+    }
+    return false;
   }
 
   private static class InstanceHolder {

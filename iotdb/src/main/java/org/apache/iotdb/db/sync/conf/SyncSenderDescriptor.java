@@ -89,9 +89,6 @@ public class SyncSenderDescriptor {
       conf.setServerIp(properties.getProperty("server_ip", conf.getServerIp()));
       conf.setServerPort(Integer
           .parseInt(properties.getProperty("server_port", Integer.toString(conf.getServerPort()))));
-
-      conf.setClientPort(Integer
-          .parseInt(properties.getProperty("client_port", Integer.toString(conf.getClientPort()))));
       conf.setUploadCycleInSeconds(Integer.parseInt(properties
           .getProperty("upload_cycle_in_seconds",
               Integer.toString(conf.getUploadCycleInSeconds()))));
@@ -106,7 +103,8 @@ public class SyncSenderDescriptor {
       conf.setUuidPath(
           dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.UUID_FILE_NAME);
       conf.setLastFileInfo(
-          dataDirectory + Constans.SYNC_CLIENT + File.separatorChar + Constans.LAST_LOCAL_FILE_NAME);
+          dataDirectory + Constans.SYNC_CLIENT + File.separatorChar
+              + Constans.LAST_LOCAL_FILE_NAME);
       String[] iotdbBufferwriteDirectory = conf.getBufferwriteDirectory();
       String[] snapshots = new String[conf.getBufferwriteDirectory().length];
       for (int i = 0; i < conf.getBufferwriteDirectory().length; i++) {
